@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC  
+    "-//mybatis.org//DTD Mapper 3.0//EN"  
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+   
+<mapper namespace="com.fh.dao.OrderDao">
+    <select id="queryProduct" resultType="product">
+        select * from t_pro
+    </select>
+
+    <select id="queryCount" parameterType="proQuery" resultType="Integer">
+       select  count(*) from  t_order d
+       <include refid="sql_where"></include>
+    </select>
+
+    <select id="queryList" parameterType="proQuery" resultMap="MapList">
+        select  d.*,b.proName 'proName'
+        from t_order d left join t_pro b on d.proID=b.id
+        <include refid="sql_where"></include>
+        order by d.id desc
+        limit #{start},#{length}
+    </select>
+
+    <resultMap id="MapList" type="Map">
+        <result property="proName" column="proName"></result>
+    </resultMap>
+
+    <sql id="sql_where" >
+        <where>
+            and d.del=0
+            <if test="minPrice !=0 and minPrice!=null">
+              and d.price >=#{minPrice} and d.del=0
+            </if>
+            <if test="maxPrice !=0 and maxPrice!=null">
+            <![CDATA[
+                and d.price <=#{maxPrice} and d.del=0
+                ]]>
+            </if>
+            <if test="brandId !=null and brandId !=-1">
+                and d.proID=#{brandId} and d.del=0
+            </if>
+        </where>
+    </sql>
+
+
+    <update id="delOrderId" parameterType="order">
+        update t_order set del=#{del}
+        where id=#{id}
+    </update>
+
+</mapper>
